@@ -1,0 +1,39 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo circular -->
+  <circle cx="100" cy="100" r="95" fill="#fff5f7" stroke="#ec4899" stroke-width="2"/>
+  
+  <!-- Decoración de uñas -->
+  <g id="nails">
+    <!-- Uña 1 - Rojo -->
+    <path d="M 50 80 Q 45 60 50 40 Q 55 50 60 80 Z" fill="#ef4444" opacity="0.9"/>
+    <ellipse cx="55" cy="75" rx="4" ry="6" fill="#fca5a5" opacity="0.6"/>
+    
+    <!-- Uña 2 - Rosa -->
+    <path d="M 75 70 Q 70 45 75 25 Q 80 45 85 70 Z" fill="#ec4899" opacity="0.9"/>
+    <ellipse cx="80" cy="65" rx="4" ry="6" fill="#f472b6" opacity="0.6"/>
+    
+    <!-- Uña 3 - Púrpura -->
+    <path d="M 100 65 Q 95 40 100 20 Q 105 40 110 65 Z" fill="#a855f7" opacity="0.9"/>
+    <ellipse cx="105" cy="60" rx="4" ry="6" fill="#d8b4fe" opacity="0.6"/>
+    
+    <!-- Uña 4 - Rosa claro -->
+    <path d="M 125 70 Q 120 45 125 25 Q 130 45 135 70 Z" fill="#f472b6" opacity="0.9"/>
+    <ellipse cx="130" cy="65" rx="4" ry="6" fill="#fbcfe8" opacity="0.6"/>
+    
+    <!-- Uña 5 - Rojo oscuro -->
+    <path d="M 150 80 Q 145 60 150 40 Q 155 50 160 80 Z" fill="#dc2626" opacity="0.9"/>
+    <ellipse cx="155" cy="75" rx="4" ry="6" fill="#fecaca" opacity="0.6"/>
+  </g>
+  
+  <!-- Texto -->
+  <text x="100" y="130" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#ec4899">
+    MAYSSCH
+  </text>
+  <text x="100" y="155" font-family="Arial, sans-serif" font-size="14" text-anchor="middle" fill="#a855f7" letter-spacing="2">
+    NAILS
+  </text>
+  
+  <!-- Decoración de puntos -->
+  <circle cx="40" cy="100" r="3" fill="#ec4899" opacity="0.5"/>
+  <circle cx="160" cy="100" r="3" fill="#a855f7" opacity="0.5"/>
+</svg>

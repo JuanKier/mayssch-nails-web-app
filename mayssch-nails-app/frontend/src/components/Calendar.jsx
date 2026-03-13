@@ -1,101 +1,96 @@
+import { getHolidayName, isHoliday, isSunday } from "../utils/holidays";
+
 export default function Calendar({ appointments, onSelectDate, selectedDate, month, year }) {
   const slots = ["08:00", "10:00", "13:00", "15:00", "17:00"];
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
+  
+  const emptyDays = Array(firstDayOfMonth).fill(null);
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-
-  // Lista de feriados Paraguay 2026 (con traslados)
-  const feriados = [
-    new Date(2026, 0, 1),   // 1 enero
-    new Date(2026, 2, 2),   // 2 marzo (traslado Día de los Héroes)
-    new Date(2026, 3, 2),   // 2 abril Jueves Santo
-    new Date(2026, 3, 3),   // 3 abril Viernes Santo
-    new Date(2026, 4, 1),   // 1 mayo Día del Trabajador
-    new Date(2026, 4, 14),  // 14 mayo Independencia
-    new Date(2026, 4, 15),  // 15 mayo Independencia
-    new Date(2026, 5, 12),  // 12 junio Paz del Chaco
-    new Date(2026, 5, 22),  // 22 junio (traslado Jura Constitución)
-    new Date(2026, 7, 15),  // 15 agosto Fundación de Asunción
-    new Date(2026, 8, 28),  // 28 septiembre (traslado Batalla Boquerón)
-    new Date(2026, 11, 8),  // 8 diciembre Virgen de Caacupé
-    new Date(2026, 11, 25), // 25 diciembre Navidad
-  ];
+  const allDays = [...emptyDays, ...days];
 
   const getAppointmentsForDay = (day) =>
-    appointments.filter(
-      (appt) =>
-        new Date(appt.date_time).getDate() === day &&
-        new Date(appt.date_time).getMonth() === month &&
-        new Date(appt.date_time).getFullYear() === year
-    );
+    appointments.filter((appt) => {
+      if (!appt.date_time) return false;
+      const [datePart] = appt.date_time.split(' ');
+      const [y, m, d] = datePart.split('-').map(Number);
+      return d === day && m === month + 1 && y === year;
+    });
 
   return (
     <div>
-      <div className="grid grid-cols-7 gap-3 text-center">
+      <div className="grid grid-cols-7 gap-2 mb-4">
         {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map((d) => (
           <div
             key={d}
-            className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600 tracking-wide"
+            className="text-center text-xs font-medium text-gray-500 uppercase tracking-wide py-2"
           >
             {d}
           </div>
         ))}
+      </div>
 
-        {days.map((day) => {
+      <div className="grid grid-cols-7 gap-2">
+        {allDays.map((day, index) => {
+          if (day === null) {
+            return <div key={`empty-${index}`} className="aspect-square" />;
+          }
+
           const dateObj = new Date(year, month, day);
           const isSelected =
             selectedDate && dateObj.toDateString() === selectedDate.toDateString();
 
-          const isHoliday = feriados.some(
-            (f) => f.toDateString() === dateObj.toDateString()
-          );
+          const holidayName = getHolidayName(dateObj);
+          const isSundayDay = isSunday(dateObj);
+          const isHolidayDay = isHoliday(dateObj);
+          const isSpecialDay = isHolidayDay || isSundayDay;
 
           const appointmentsForDay = getAppointmentsForDay(day);
 
           return (
-            <div
+            <button
               key={day}
               onClick={() => onSelectDate(dateObj)}
-              className={`cursor-pointer rounded-xl border p-3 shadow-md transition transform hover:scale-105
-                ${
-                  isHoliday
-                    ? "bg-red-100 border-red-400 text-red-700"
-                    : isSelected
-                    ? "bg-gradient-to-r from-pink-200 to-purple-200 border-purple-500"
-                    : "bg-white hover:bg-pink-50 border-gray-200"
-                }`}
+              className={`aspect-square rounded-xl p-2 transition-all hover:scale-105 ${
+                isSpecialDay
+                  ? "bg-red-50 border border-red-200 text-red-700"
+                  : isSelected
+                  ? "bg-pink-100 border-2 border-pink-400 shadow-md"
+                  : "bg-gray-50 hover:bg-gray-100 border border-gray-200"
+              }`}
             >
-              {/* Número del día */}
-              <div className="font-bold text-gray-700 text-lg tracking-wide">
-                {day}
-              </div>
+              <div className="flex flex-col h-full">
+                <div className={`text-sm font-semibold mb-1 ${isSpecialDay ? 'text-red-700' : 'text-gray-900'}`}>
+                  {day}
+                </div>
 
-              {/* Indicadores de horarios */}
-              <div className="flex justify-center space-x-1 mt-2">
-                {slots.map((slot) => {
-                  const taken = appointmentsForDay.some((appt) => {
-                    const apptTime = new Date(appt.date_time).toLocaleTimeString(
-                      "es-ES",
-                      {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false,
-                      }
+                {holidayName && (
+                  <div className="text-[8px] text-red-600 leading-tight mb-1">
+                    {holidayName}
+                  </div>
+                )}
+
+                <div className="flex flex-wrap gap-0.5 justify-center mt-auto">
+                  {slots.map((slot) => {
+                    const taken = appointmentsForDay.some((appt) => {
+                      const [, timePart] = appt.date_time.split(' ');
+                      const timeStr = timePart ? timePart.substring(0, 5) : '';
+                      return timeStr === slot;
+                    });
+
+                    return (
+                      <div
+                        key={slot}
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          taken ? "bg-pink-400" : "bg-gray-300"
+                        }`}
+                        title={slot}
+                      />
                     );
-                    return apptTime === slot;
-                  });
-
-                  return (
-                    <span
-                      key={slot}
-                      className={`w-3 h-3 rounded-full ${
-                        taken ? "bg-pink-500" : "bg-green-400"
-                      }`}
-                      title={slot}
-                    ></span>
-                  );
-                })}
+                  })}
+                </div>
               </div>
-            </div>
+            </button>
           );
         })}
       </div>

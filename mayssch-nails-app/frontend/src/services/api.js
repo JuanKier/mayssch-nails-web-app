@@ -98,3 +98,59 @@ export async function deleteProcedure(id) {
   if (!res.ok) throw new Error("Error eliminando procedimiento");
   return res.json();
 }
+
+// Inventario
+export async function getInventory() {
+  const res = await fetch(`${API_URL}/inventory`);
+  if (!res.ok) throw new Error("Error obteniendo inventario");
+  return res.json();
+}
+
+export async function createInventory(data) {
+  const res = await fetch(`${API_URL}/inventory`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Error creando inventario");
+  return res.json();
+}
+
+export async function updateInventory(id, data) {
+  const res = await fetch(`${API_URL}/inventory/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Error actualizando inventario");
+  return res.json();
+}
+
+export async function deleteInventory(id) {
+  const res = await fetch(`${API_URL}/inventory/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Error eliminando inventario");
+  return res.json();
+}
+
+// Gastos
+export async function getExpenses() {
+  const res = await fetch(`${API_URL}/expenses`);
+  if (!res.ok) throw new Error("Error obteniendo gastos");
+  return res.json();
+}
+
+export async function createExpense(data) {
+  const res = await fetch(`${API_URL}/expenses`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Error creando gasto");
+  return res.json();
+}
+
+export async function deleteExpense(id) {
+  const res = await fetch(`${API_URL}/expenses/${id}`, { method: "DELETE" });
+  if (!res.ok) throw new Error("Error eliminando gasto");
+  return res.json();
+}
