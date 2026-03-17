@@ -13,11 +13,21 @@ export default function Accounting({ expenses, appointments, procedures, onAddEx
     
     // Calcular ingresos solo de citas finalizadas
     let totalIncome = 0;
+    let efectivoTotal = 0;
+    let bancoTotal = 0;
+    
     const completedAppointments = appointments.filter((a) => a.status === "completed");
     
     completedAppointments.forEach((appt) => {
       appt.services?.forEach((service) => {
-        totalIncome += service.procedure_price * service.quantity;
+        const income = service.procedure_price * service.quantity;
+        totalIncome += income;
+        
+        if (appt.payment_method === 'efectivo') {
+          efectivoTotal += income;
+        } else if (appt.payment_method === 'banco') {
+          bancoTotal += income;
+        }
       });
     });
 
@@ -70,6 +80,8 @@ export default function Accounting({ expenses, appointments, procedures, onAddEx
     return {
       totalExpenses,
       totalIncome,
+      efectivoTotal,
+      bancoTotal,
       netProfit,
       monthlyFlow,
     };
@@ -82,6 +94,7 @@ export default function Accounting({ expenses, appointments, procedures, onAddEx
         description: expenseDesc,
         amount: parseFloat(expenseAmount),
         category: expenseCategory,
+        date: new Date().toISOString(),
       });
       setExpenseDesc("");
       setExpenseAmount("");
@@ -104,21 +117,31 @@ export default function Accounting({ expenses, appointments, procedures, onAddEx
       </h2>
 
       {/* Resumen financiero */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-gradient-to-br from-green-100 to-green-200 p-4 rounded-xl shadow">
           <div className="text-sm text-green-600">Ingresos Totales</div>
           <div className="text-2xl font-bold text-green-700">{formatGuaranies(financialStats.totalIncome)}</div>
           <div className="text-xs text-green-500">Solo citas finalizadas</div>
         </div>
+        <div className="bg-gradient-to-br from-emerald-100 to-emerald-200 p-4 rounded-xl shadow">
+          <div className="text-sm text-emerald-600">💵 Efectivo</div>
+          <div className="text-2xl font-bold text-emerald-700">{formatGuaranies(financialStats.efectivoTotal)}</div>
+        </div>
+        <div className="bg-gradient-to-br from-blue-100 to-blue-200 p-4 rounded-xl shadow">
+          <div className="text-sm text-blue-600">🏦 Banco</div>
+          <div className="text-2xl font-bold text-blue-700">{formatGuaranies(financialStats.bancoTotal)}</div>
+        </div>
         <div className="bg-gradient-to-br from-red-100 to-red-200 p-4 rounded-xl shadow">
           <div className="text-sm text-red-600">Gastos Totales</div>
           <div className="text-2xl font-bold text-red-700">{formatGuaranies(financialStats.totalExpenses)}</div>
         </div>
-        <div className="bg-gradient-to-br from-blue-100 to-blue-200 p-4 rounded-xl shadow">
-          <div className="text-sm text-blue-600">Ganancia Neta</div>
-          <div className="text-2xl font-bold text-blue-700">{formatGuaranies(financialStats.netProfit)}</div>
-          <div className="text-xs text-blue-500">Ingresos - Gastos</div>
-        </div>
+      </div>
+
+      {/* Ganancia neta */}
+      <div className="bg-gradient-to-br from-purple-100 to-purple-200 p-4 rounded-xl shadow">
+        <div className="text-sm text-purple-600">Ganancia Neta</div>
+        <div className="text-2xl font-bold text-purple-700">{formatGuaranies(financialStats.netProfit)}</div>
+        <div className="text-xs text-purple-500">Ingresos - Gastos</div>
       </div>
 
       {/* Gráfico de flujo mensual */}

@@ -36,14 +36,12 @@ export default function Reports({ appointments, procedures, inventory }) {
           year === selectedYear
         );
       }
-    });
+    }).sort((a, b) => new Date(a.date_time) - new Date(b.date_time));
   }, [appointments, viewType, selectedMonth, selectedYear, selectedDate, selectedClient]);
 
   const stats = useMemo(() => {
     const total = filteredAppointments.length;
-    const confirmed = filteredAppointments.filter((a) => a.status === "confirmed").length;
     const pending = filteredAppointments.filter((a) => a.status === "pending").length;
-    const postponed = filteredAppointments.filter((a) => a.status === "postponed").length;
     const completed = filteredAppointments.filter((a) => a.status === "completed").length;
 
     // Solo calcular ingresos de citas finalizadas
@@ -85,9 +83,7 @@ export default function Reports({ appointments, procedures, inventory }) {
 
     return {
       total,
-      confirmed,
       pending,
-      postponed,
       completed,
       totalRevenue,
       byProcedure,

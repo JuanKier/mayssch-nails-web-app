@@ -9,6 +9,19 @@ const STORES = {
   EXPENSES: 'expenses',
 };
 
+// Limpiar toda la base de datos
+export async function clearDatabase() {
+  Object.values(STORES).forEach(store => {
+    localStorage.removeItem(DB_PREFIX + store);
+  });
+  console.log('🗑️ Database cleared');
+}
+
+// Helper para generar ID único
+function generateId() {
+  return Date.now() + Math.floor(Math.random() * 1000);
+}
+
 // Helper para guardar datos
 function saveStore(storeName, data) {
   try {
@@ -50,7 +63,7 @@ export async function getAllClients() {
 
 export async function addClient(data) {
   const clients = loadStore(STORES.CLIENTS);
-  const newClient = { ...data, id: Date.now() };
+  const newClient = { ...data, id: generateId() };
   clients.push(newClient);
   saveStore(STORES.CLIENTS, clients);
   return newClient.id;
@@ -58,7 +71,7 @@ export async function addClient(data) {
 
 export async function updateClient(id, data) {
   const clients = loadStore(STORES.CLIENTS);
-  const index = clients.findIndex(c => c.id === id);
+  const index = clients.findIndex(c => Number(c.id) === Number(id));
   if (index !== -1) {
     clients[index] = { ...data, id };
     saveStore(STORES.CLIENTS, clients);
@@ -69,7 +82,7 @@ export async function updateClient(id, data) {
 
 export async function deleteClient(id) {
   const clients = loadStore(STORES.CLIENTS);
-  const filtered = clients.filter(c => c.id !== id);
+  const filtered = clients.filter(c => Number(c.id) !== Number(id));
   saveStore(STORES.CLIENTS, filtered);
 }
 
@@ -80,7 +93,7 @@ export async function getAllProcedures() {
 
 export async function addProcedure(data) {
   const procedures = loadStore(STORES.PROCEDURES);
-  const newProc = { ...data, id: Date.now() };
+  const newProc = { ...data, id: generateId() };
   procedures.push(newProc);
   saveStore(STORES.PROCEDURES, procedures);
   return newProc.id;
@@ -88,7 +101,7 @@ export async function addProcedure(data) {
 
 export async function updateProcedure(id, data) {
   const procedures = loadStore(STORES.PROCEDURES);
-  const index = procedures.findIndex(p => p.id === id);
+  const index = procedures.findIndex(p => Number(p.id) === Number(id));
   if (index !== -1) {
     procedures[index] = { ...data, id };
     saveStore(STORES.PROCEDURES, procedures);
@@ -99,7 +112,7 @@ export async function updateProcedure(id, data) {
 
 export async function deleteProcedure(id) {
   const procedures = loadStore(STORES.PROCEDURES);
-  const filtered = procedures.filter(p => p.id !== id);
+  const filtered = procedures.filter(p => Number(p.id) !== Number(id));
   saveStore(STORES.PROCEDURES, filtered);
 }
 
@@ -110,7 +123,7 @@ export async function getAllAppointments() {
 
 export async function addAppointment(data) {
   const appointments = loadStore(STORES.APPOINTMENTS);
-  const newAppt = { ...data, id: Date.now() };
+  const newAppt = { ...data, id: generateId() };
   appointments.push(newAppt);
   saveStore(STORES.APPOINTMENTS, appointments);
   return newAppt.id;
@@ -118,9 +131,10 @@ export async function addAppointment(data) {
 
 export async function updateAppointment(id, data) {
   const appointments = loadStore(STORES.APPOINTMENTS);
-  const index = appointments.findIndex(a => a.id === id);
+  const index = appointments.findIndex(a => Number(a.id) === Number(id));
   if (index !== -1) {
-    appointments[index] = { ...data, id };
+    // Conservar los datos existentes y solo actualizar los campos enviados
+    appointments[index] = { ...appointments[index], ...data, id };
     saveStore(STORES.APPOINTMENTS, appointments);
     return appointments[index].id;
   }
@@ -129,7 +143,7 @@ export async function updateAppointment(id, data) {
 
 export async function deleteAppointment(id) {
   const appointments = loadStore(STORES.APPOINTMENTS);
-  const filtered = appointments.filter(a => a.id !== id);
+  const filtered = appointments.filter(a => Number(a.id) !== Number(id));
   saveStore(STORES.APPOINTMENTS, filtered);
 }
 
@@ -140,7 +154,7 @@ export async function getAllInventory() {
 
 export async function addInventory(data) {
   const inventory = loadStore(STORES.INVENTORY);
-  const newItem = { ...data, id: Date.now() };
+  const newItem = { ...data, id: generateId() };
   inventory.push(newItem);
   saveStore(STORES.INVENTORY, inventory);
   return newItem.id;
@@ -148,7 +162,7 @@ export async function addInventory(data) {
 
 export async function updateInventory(id, data) {
   const inventory = loadStore(STORES.INVENTORY);
-  const index = inventory.findIndex(i => i.id === id);
+  const index = inventory.findIndex(i => Number(i.id) === Number(id));
   if (index !== -1) {
     inventory[index] = { ...data, id };
     saveStore(STORES.INVENTORY, inventory);
@@ -159,7 +173,7 @@ export async function updateInventory(id, data) {
 
 export async function deleteInventory(id) {
   const inventory = loadStore(STORES.INVENTORY);
-  const filtered = inventory.filter(i => i.id !== id);
+  const filtered = inventory.filter(i => Number(i.id) !== Number(id));
   saveStore(STORES.INVENTORY, filtered);
 }
 
@@ -170,7 +184,7 @@ export async function getAllExpenses() {
 
 export async function addExpense(data) {
   const expenses = loadStore(STORES.EXPENSES);
-  const newExpense = { ...data, id: Date.now() };
+  const newExpense = { ...data, id: generateId() };
   expenses.push(newExpense);
   saveStore(STORES.EXPENSES, expenses);
   return newExpense.id;
@@ -178,74 +192,75 @@ export async function addExpense(data) {
 
 export async function deleteExpense(id) {
   const expenses = loadStore(STORES.EXPENSES);
-  const filtered = expenses.filter(e => e.id !== id);
+  const filtered = expenses.filter(e => Number(e.id) !== Number(id));
   saveStore(STORES.EXPENSES, filtered);
 }
 
 // Inicializar con datos de prueba si la base de datos está vacía
 export async function seedData() {
   console.log('🔍 Checking if data needs to be seeded...');
-  const clients = await getAllClients();
-  console.log('📊 Current clients count:', clients.length);
   
-  if (clients.length === 0) {
-    console.log('🌱 Seeding initial data...');
-    
-    // Procedimientos por defecto
-    const procedures = [
-      { name: 'Pedicura', price: 70000 },
-      { name: 'Capping en gel', price: 110000 },
-      { name: 'Softgel', price: 120000 },
-      { name: 'Semipermanente', price: 60000 },
-      { name: 'Diseño elaborado', price: 20000 },
-      { name: 'Diseño simple', price: 10000 },
-    ];
-    
-    console.log('💅 Adding procedures...');
-    for (const proc of procedures) {
-      const id = await addProcedure(proc);
-      console.log('✅ Added procedure:', proc.name, 'with ID:', id);
-    }
-    
-    // Clientes de prueba
-    const testClients = [
-      { name: 'Juana Pérez', contact: '0991-123456' },
-      { name: 'María López', contact: '0982-654321' },
-      { name: 'Carolina Gómez', contact: '0975-111222' },
-    ];
-    
-    console.log('👥 Adding clients...');
-    for (const client of testClients) {
-      const id = await addClient(client);
-      console.log('✅ Added client:', client.name, 'with ID:', id);
-    }
-    
-    // Inventario de prueba
-    const inventory = [
-      { product_name: 'Esmalte Rojo Pasión', category: 'esmaltes', quantity: 15, min_stock: 5, unit_price: 25000 },
-      { product_name: 'Esmalte Rosa Claro', category: 'esmaltes', quantity: 12, min_stock: 5, unit_price: 25000 },
-      { product_name: 'Softgel', category: 'geles', quantity: 6, min_stock: 3, unit_price: 85000 },
-      { product_name: 'Top Coat Brillante', category: 'geles', quantity: 10, min_stock: 4, unit_price: 45000 },
-      { product_name: 'Base Coat', category: 'geles', quantity: 9, min_stock: 4, unit_price: 40000 },
-      { product_name: 'Limas 100/180', category: 'insumos', quantity: 50, min_stock: 20, unit_price: 2000 },
-      { product_name: 'Algodón', category: 'insumos', quantity: 3, min_stock: 5, unit_price: 15000 },
-      { product_name: 'Acetona Pura', category: 'insumos', quantity: 2, min_stock: 3, unit_price: 35000 },
-      { product_name: 'Removedor de Cutícula', category: 'insumos', quantity: 4, min_stock: 2, unit_price: 22000 },
-      { product_name: 'Tips Naturales', category: 'insumos', quantity: 100, min_stock: 50, unit_price: 500 },
-    ];
-    
-    console.log('📦 Adding inventory...');
-    for (const item of inventory) {
-      const id = await addInventory(item);
-      console.log('✅ Added inventory:', item.product_name, 'with ID:', id);
-    }
-    
-    console.log('✨ Data seeded successfully!');
-    console.log('📊 Final counts:');
-    console.log('  - Procedures:', (await getAllProcedures()).length);
-    console.log('  - Clients:', (await getAllClients()).length);
-    console.log('  - Inventory:', (await getAllInventory()).length);
-  } else {
+  // Verificar si ya hay procedimientos (evitar duplicados)
+  const existingProcedures = await getAllProcedures();
+  if (existingProcedures.length > 0) {
     console.log('✅ Data already exists, skipping seed');
+    return;
   }
+  
+  console.log('🌱 Seeding initial data...');
+  
+  // Procedimientos por defecto
+  const procedures = [
+    { name: 'Pedicura', price: 70000 },
+    { name: 'Capping en gel', price: 110000 },
+    { name: 'Softgel', price: 120000 },
+    { name: 'Semipermanente', price: 60000 },
+    { name: 'Diseño elaborado', price: 20000 },
+    { name: 'Diseño simple', price: 10000 },
+  ];
+  
+  console.log('💅 Adding procedures...');
+  for (const proc of procedures) {
+    const id = await addProcedure(proc);
+    console.log('✅ Added procedure:', proc.name, 'with ID:', id);
+  }
+  
+  // Clientes de prueba
+  const testClients = [
+    { name: 'Juana Pérez', contact: '0991-123456' },
+    { name: 'María López', contact: '0982-654321' },
+    { name: 'Carolina Gómez', contact: '0975-111222' },
+  ];
+  
+  console.log('👥 Adding clients...');
+  for (const client of testClients) {
+    const id = await addClient(client);
+    console.log('✅ Added client:', client.name, 'with ID:', id);
+  }
+  
+  // Inventario de prueba
+  const inventory = [
+    { product_name: 'Esmalte Rojo Pasión', category: 'esmaltes', quantity: 15, min_stock: 5, unit_price: 25000 },
+    { product_name: 'Esmalte Rosa Claro', category: 'esmaltes', quantity: 12, min_stock: 5, unit_price: 25000 },
+    { product_name: 'Softgel', category: 'geles', quantity: 6, min_stock: 3, unit_price: 85000 },
+    { product_name: 'Top Coat Brillante', category: 'geles', quantity: 10, min_stock: 4, unit_price: 45000 },
+    { product_name: 'Base Coat', category: 'geles', quantity: 9, min_stock: 4, unit_price: 40000 },
+    { product_name: 'Limas 100/180', category: 'insumos', quantity: 50, min_stock: 20, unit_price: 2000 },
+    { product_name: 'Algodón', category: 'insumos', quantity: 3, min_stock: 5, unit_price: 15000 },
+    { product_name: 'Acetona Pura', category: 'insumos', quantity: 2, min_stock: 3, unit_price: 35000 },
+    { product_name: 'Removedor de Cutícula', category: 'insumos', quantity: 4, min_stock: 2, unit_price: 22000 },
+    { product_name: 'Tips Naturales', category: 'insumos', quantity: 100, min_stock: 50, unit_price: 500 },
+  ];
+  
+  console.log('📦 Adding inventory...');
+  for (const item of inventory) {
+    const id = await addInventory(item);
+    console.log('✅ Added inventory:', item.product_name, 'with ID:', id);
+  }
+  
+  console.log('✨ Data seeded successfully!');
+  console.log('📊 Final counts:');
+  console.log('  - Procedures:', (await getAllProcedures()).length);
+  console.log('  - Clients:', (await getAllClients()).length);
+  console.log('  - Inventory:', (await getAllInventory()).length);
 }

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { formatGuaranies } from "../utils/currency";
 
-export default function AllAppointments({ appointments, procedures, clients, onUpdate, onDelete }) {
+export default function AllAppointments({ appointments, procedures, clients, onUpdate, onDelete, onEdit }) {
   const [filterDate, setFilterDate] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
 
@@ -16,6 +16,9 @@ export default function AllAppointments({ appointments, procedures, clients, onU
     const matchesDate = !filterDate || datePart === filterDate;
     const matchesStatus = filterStatus === "all" || appt.status === filterStatus;
     return matchesDate && matchesStatus;
+  }).sort((a, b) => {
+    if (!a.date_time || !b.date_time) return 0;
+    return new Date(a.date_time.replace(' ', 'T')) - new Date(b.date_time.replace(' ', 'T'));
   });
 
   const groupedByDate = filteredAppointments.reduce((acc, appt) => {
@@ -35,10 +38,8 @@ export default function AllAppointments({ appointments, procedures, clients, onU
 
   const getStatusColor = (status) => {
     const colors = {
-      pending: "bg-yellow-50 text-yellow-700 border-yellow-200",
-      confirmed: "bg-blue-50 text-blue-700 border-blue-200",
-      postponed: "bg-orange-50 text-orange-700 border-orange-200",
-      completed: "bg-green-50 text-green-700 border-green-200",
+      pending: "bg-amber-50 text-amber-700 border-amber-200",
+      completed: "bg-emerald-50 text-emerald-700 border-emerald-200",
     };
     return colors[status] || colors.pending;
   };
@@ -46,8 +47,6 @@ export default function AllAppointments({ appointments, procedures, clients, onU
   const getStatusLabel = (status) => {
     const labels = {
       pending: "Pendiente",
-      confirmed: "Confirmada",
-      postponed: "Pospuesta",
       completed: "Finalizada",
     };
     return labels[status] || "Pendiente";
@@ -81,9 +80,7 @@ export default function AllAppointments({ appointments, procedures, clients, onU
             >
               <option value="all">Todos</option>
               <option value="pending">Pendiente</option>
-              <option value="confirmed">Confirmada</option>
               <option value="completed">Finalizada</option>
-              <option value="postponed">Pospuesta</option>
             </select>
           </div>
           <div className="flex items-end">
@@ -198,20 +195,43 @@ export default function AllAppointments({ appointments, procedures, clients, onU
 
                       {/* Acciones */}
                       <div className="flex flex-wrap gap-2">
-                        {appt.status !== "completed" && (
-                          <button
-                            onClick={() => onUpdate(appt.id, "completed")}
-                            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition font-medium text-sm"
-                          >
-                            ✓ Finalizar
-                          </button>
+                        {appt.status === "completed" ? (
+                          <div className="flex-1 text-center py-2 text-green-600 font-medium text-sm bg-green-100 dark:bg-green-900/30 rounded-lg">
+                            ✓ Finalizada
+                          </div>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => {
+                                // Verificar que tenga servicios y método de pago
+                                if (!appt.services || appt.services.length === 0) {
+                                  alert("No se puede finalizar: la cita no tiene servicios registrados. Edita la cita para agregar servicios.");
+                                  return;
+                                }
+                                if (!appt.payment_method) {
+                                  alert("No se puede finalizar: la cita no tiene método de pago. Edita la cita para seleccionar Efectivo/Banco.");
+                                  return;
+                                }
+                                onUpdate(appt.id, "completed");
+                              }}
+                              className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition font-medium text-sm"
+                            >
+                              ✓ Finalizar
+                            </button>
+                            <button
+                              onClick={() => onEdit && onEdit(appt)}
+                              className="px-4 py-2 text-blue-500 hover:bg-blue-50 rounded-lg transition text-sm"
+                            >
+                              ✏️ Editar
+                            </button>
+                            <button
+                              onClick={() => onDelete(appt.id)}
+                              className="px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg transition text-sm"
+                            >
+                              Eliminar
+                            </button>
+                          </>
                         )}
-                        <button
-                          onClick={() => onDelete(appt.id)}
-                          className="px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg transition text-sm"
-                        >
-                          Eliminar
-                        </button>
                       </div>
                     </div>
                   );

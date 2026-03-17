@@ -1,6 +1,6 @@
 import { formatGuaranies } from "../utils/currency";
 
-export default function AppointmentsList({ appointments, onUpdateStatus, onDelete }) {
+export default function AppointmentsList({ appointments, onUpdateStatus, onDelete, onEdit }) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
@@ -15,10 +15,8 @@ export default function AppointmentsList({ appointments, onUpdateStatus, onDelet
 
   const getStatusColor = (status) => {
     const colors = {
-      pending: "bg-yellow-50 text-yellow-700 border-yellow-200",
-      confirmed: "bg-blue-50 text-blue-700 border-blue-200",
-      postponed: "bg-orange-50 text-orange-700 border-orange-200",
-      completed: "bg-green-50 text-green-700 border-green-200",
+      pending: "bg-amber-50 text-amber-700 border-amber-200",
+      completed: "bg-emerald-50 text-emerald-700 border-emerald-200",
     };
     return colors[status] || colors.pending;
   };
@@ -26,8 +24,6 @@ export default function AppointmentsList({ appointments, onUpdateStatus, onDelet
   const getStatusLabel = (status) => {
     const labels = {
       pending: "Pendiente",
-      confirmed: "Confirmada",
-      postponed: "Pospuesta",
       completed: "Finalizada",
     };
     return labels[status] || "Pendiente";
@@ -40,17 +36,22 @@ export default function AppointmentsList({ appointments, onUpdateStatus, onDelet
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold text-gray-900">Citas de hoy</h2>
-        <p className="text-sm text-gray-500 mt-1">
+      <div className="bg-gradient-to-r from-pink-500 to-purple-500 rounded-2xl p-6 text-white">
+        <h2 className="text-2xl font-bold">Citas de hoy</h2>
+        <p className="text-white/80 mt-1">
           {today.toLocaleDateString("es-ES", { weekday: 'long', day: 'numeric', month: 'long' })}
         </p>
+        <div className="mt-4 flex items-center gap-2">
+          <span className="text-3xl font-bold">{todayAppointments.length}</span>
+          <span className="text-white/80">citas agendadas</span>
+        </div>
       </div>
 
       {todayAppointments.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-6xl mb-4">📅</div>
-          <p className="text-gray-400">No hay citas para hoy</p>
+        <div className="text-center py-16 bg-gradient-to-br from-gray-50 to-pink-50 rounded-2xl border-2 border-dashed border-gray-200">
+          <div className="text-7xl mb-4">💅</div>
+          <p className="text-gray-500 font-medium text-lg">No hay citas para hoy</p>
+          <p className="text-gray-400 text-sm mt-2">Selecciona una fecha del calendario para agendar</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -62,7 +63,7 @@ export default function AppointmentsList({ appointments, onUpdateStatus, onDelet
             return (
               <div
                 key={appt.id}
-                className="bg-white border border-gray-100 rounded-2xl p-6 hover:shadow-md transition"
+                className="bg-white border border-gray-100 rounded-2xl p-6 hover:shadow-lg hover:shadow-pink-100/50 transition-all duration-300 hover:border-pink-200 animate-fade-in"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
@@ -106,7 +107,7 @@ export default function AppointmentsList({ appointments, onUpdateStatus, onDelet
                       ))}
                       <div className="flex items-center justify-between pt-2 border-t border-gray-200">
                         <span className="font-semibold text-gray-900">Total</span>
-                        <span className="text-lg font-bold text-pink-600">{formatGuaranies(totalPrice)}</span>
+                        <span className="text-lg font-bold text-pink-500">{formatGuaranies(totalPrice)}</span>
                       </div>
                     </div>
                   </div>
@@ -114,29 +115,45 @@ export default function AppointmentsList({ appointments, onUpdateStatus, onDelet
 
                 {/* Acciones */}
                 <div className="flex flex-wrap gap-2">
-                  {appt.status !== "completed" && (
+                  {appt.status === "completed" ? (
+                    <div className="flex-1 text-center py-2 text-green-600 font-medium text-sm bg-green-100 dark:bg-green-900/30 rounded-lg">
+                      ✓ Finalizada
+                    </div>
+                  ) : (
                     <>
-                      <select
-                        value={appt.status}
-                        onChange={(e) => onUpdateStatus(appt.id, e.target.value)}
-                        className="flex-1 min-w-[150px] px-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-pink-300 focus:ring-4 focus:ring-pink-100 transition"
-                      >
-                        <option value="pending">Pendiente</option>
-                        <option value="confirmed">Confirmada</option>
-                        <option value="postponed">Pospuesta</option>
-                      </select>
                       <button
-                        onClick={() => onUpdateStatus(appt.id, "completed")}
-                        className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition font-medium text-sm"
+                        onClick={() => {
+                          // Verificar que tenga servicios y método de pago
+                          if (!appt.services || appt.services.length === 0) {
+                            alert("No se puede finalizar: la cita no tiene servicios registrados. Edita la cita para agregar servicios.");
+                            return;
+                          }
+                          if (!appt.payment_method) {
+                            alert("No se puede finalizar: la cita no tiene método de pago. Edita la cita para seleccionar Efectivo/Banco.");
+                            return;
+                          }
+                          onUpdateStatus(appt.id, "completed");
+                        }}
+                        className="px-6 py-2.5 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 hover:scale-105 transition-all duration-200 font-medium text-sm shadow-sm hover:shadow-md"
                       >
                         ✓ Finalizar
                       </button>
+                      <button
+                        onClick={() => onEdit && onEdit(appt)}
+                        className="px-4 py-2 text-blue-500 hover:bg-blue-50 rounded-lg transition text-sm"
+                      >
+                        ✏️ Editar
+                      </button>
                     </>
                   )}
-                  {appt.status === "completed" && (
-                    <div className="flex-1 text-center py-2 text-green-600 font-medium text-sm">
-                      Cita finalizada
-                    </div>
+                  {appt.payment_method && (
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      appt.payment_method === 'efectivo' 
+                        ? 'bg-green-100 text-green-700' 
+                        : 'bg-blue-100 text-blue-700'
+                    }`}>
+                      {appt.payment_method === 'efectivo' ? '💵 Efectivo' : '🏦 Banco'}
+                    </span>
                   )}
                   <button
                     onClick={() => onDelete(appt.id)}

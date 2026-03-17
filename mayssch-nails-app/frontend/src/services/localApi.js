@@ -24,7 +24,8 @@ export async function createClient(data) {
 
 export async function updateClient(id, data) {
   await dbUpdateClient(id, data);
-  return { ...data, id };
+  const clients = await getClients();
+  return clients.find(c => Number(c.id) === Number(id));
 }
 
 export async function deleteClient(id) {
@@ -44,7 +45,8 @@ export async function createProcedure(data) {
 
 export async function updateProcedure(id, data) {
   await dbUpdateProcedure(id, data);
-  return { ...data, id };
+  const procedures = await getProcedures();
+  return procedures.find(p => Number(p.id) === Number(id));
 }
 
 export async function deleteProcedure(id) {
@@ -68,7 +70,9 @@ export async function createAppointment(data) {
 export async function updateAppointment(id, data) {
   console.log('📝 Updating appointment:', id, data);
   await dbUpdateAppointment(id, data);
-  const updatedAppointment = { ...data, id };
+  // Obtener la cita actualizada con todos sus datos
+  const appointments = await getAllAppointments();
+  const updatedAppointment = appointments.find(a => Number(a.id) === Number(id));
   console.log('✅ Appointment updated:', updatedAppointment);
   return updatedAppointment;
 }
@@ -90,7 +94,8 @@ export async function createInventory(data) {
 
 export async function updateInventory(id, data) {
   await dbUpdateInventory(id, data);
-  return { ...data, id };
+  const inventory = await getInventory();
+  return inventory.find(i => Number(i.id) === Number(id));
 }
 
 export async function deleteInventory(id) {
